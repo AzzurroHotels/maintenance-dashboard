@@ -789,7 +789,7 @@
     <div class="auth-container" id="authContainer">
         <div class="auth-box">
             <div class="auth-header">
-                <h1>▣ Azzurro Hotels</h1>
+                <h1>â–£ Azzurro Hotels</h1>
                 <p>Maintenance Dashboard</p>
             </div>
 
@@ -819,7 +819,7 @@
             <!-- Signup Form -->
             <div class="auth-form" id="signupForm">
                 <div class="admin-note">
-                    <strong>ℹ Note:</strong> First account created will be the Admin account with full property management access.
+                    <strong>â„¹ Note:</strong> First account created will be the Admin account with full property management access.
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email</label>
@@ -842,24 +842,24 @@
     <div class="container" id="mainContainer">
         <header>
             <div class="header-left">
-                <h1>▣ Azzurro Hotels - Maintenance Dashboard</h1>
+                <h1>â–£ Azzurro Hotels - Maintenance Dashboard</h1>
                 <p class="subtitle">Sydney Properties Management System</p>
             </div>
             <div class="header-right">
                 <div class="user-info">
                     <div class="user-email" id="userEmail"></div>
                     <div id="adminBadge" style="display: none;">
-                        <span class="admin-badge">★ ADMIN</span>
+                        <span class="admin-badge">â˜… ADMIN</span>
                     </div>
                 </div>
-                <button class="btn-manage-admins" id="manageAdminsBtn" onclick="openAdminManagementModal()" style="display: none;">⚙ Manage Admins</button>
+                <button class="btn-manage-admins" id="manageAdminsBtn" onclick="openAdminManagementModal()" style="display: none;">âš™ Manage Admins</button>
                 <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
         </header>
 
         <div class="controls">
             <button class="btn" id="addPropertyBtn" onclick="openPropertyModal()" style="display: none;">+ Add Property</button>
-            <button class="btn btn-secondary" onclick="exportData()">↓ Export Report</button>
+            <button class="btn btn-secondary" onclick="exportData()">â†“ Export Report</button>
         </div>
 
         <div class="properties-grid" id="propertiesGrid"></div>
@@ -920,7 +920,7 @@
     <!-- Admin Management Modal -->
     <div class="modal" id="adminManagementModal">
         <div class="modal-content">
-            <div class="modal-header">⚙ Manage Admin Users</div>
+            <div class="modal-header">âš™ Manage Admin Users</div>
             <div class="admin-note">
                 <strong>Note:</strong> Admins can add/delete properties. Regular users can manage rooms and issues.
             </div>
@@ -975,7 +975,7 @@
                 // Set persistence to LOCAL (stays logged in across sessions)
                 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
                     .then(() => {
-                        console.log('✅ Firebase initialized with LOCAL persistence!');
+                        console.log('âœ… Firebase initialized with LOCAL persistence!');
                     })
                     .catch((error) => {
                         console.error('Persistence error:', error);
@@ -983,7 +983,7 @@
                 
                 return true;
             } catch (error) {
-                console.error('❌ Firebase error:', error);
+                console.error('âŒ Firebase error:', error);
                 return false;
             }
         }
@@ -1052,33 +1052,40 @@
                 if (user) {
                     console.log('User is logged in, showing dashboard immediately...');
                     currentUser = user;
-                    isAdmin = true; // Assume admin for now
                     
+                    // Show dashboard first with loading state
                     document.getElementById('userEmail').textContent = user.email;
-                    document.getElementById('adminBadge').style.display = 'block';
-                    document.getElementById('addPropertyBtn').style.display = 'inline-block';
-                    document.getElementById('manageAdminsBtn').style.display = 'inline-block';
-                    
-                    console.log('Calling showDashboard()...');
                     showDashboard();
-                    console.log('showDashboard() called!');
+                    console.log('Dashboard shown!');
                     
-                    // Do async stuff after dashboard is shown
+                    // Then check admin status and update UI
                     trackUser(user.email).then(() => {
                         console.log('User tracked');
                         return checkAdminStatus(user.email);
                     }).then((adminStatus) => {
                         console.log('Admin status checked:', adminStatus);
                         isAdmin = adminStatus;
-                        if (!isAdmin) {
+                        
+                        // Update admin UI based on actual status
+                        if (isAdmin) {
+                            document.getElementById('adminBadge').style.display = 'block';
+                            document.getElementById('addPropertyBtn').style.display = 'inline-block';
+                            document.getElementById('manageAdminsBtn').style.display = 'inline-block';
+                        } else {
                             document.getElementById('adminBadge').style.display = 'none';
                             document.getElementById('addPropertyBtn').style.display = 'none';
                             document.getElementById('manageAdminsBtn').style.display = 'none';
                         }
+                        
                         setupRealtimeListeners();
                         loadFromFirestore();
                     }).catch((error) => {
                         console.error('Error in async setup:', error);
+                        // If there's an error, treat as non-admin for safety
+                        isAdmin = false;
+                        document.getElementById('adminBadge').style.display = 'none';
+                        document.getElementById('addPropertyBtn').style.display = 'none';
+                        document.getElementById('manageAdminsBtn').style.display = 'none';
                         setupRealtimeListeners();
                         loadFromFirestore();
                     });
@@ -1144,7 +1151,7 @@
             isLoggingIn = true;
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                console.log('✅ Login successful!', userCredential.user.email);
+                console.log('âœ… Login successful!', userCredential.user.email);
                 hideError();
                 // Auth state listener will handle showing the dashboard
             } catch (error) {
@@ -1247,20 +1254,37 @@
         }
 
         function setupRealtimeListeners() {
-            if (!currentUser) return;
+            if (!currentUser) {
+                console.log('No user, skipping real-time listeners');
+                return;
+            }
             
+            console.log('Setting up real-time listeners for properties...');
             db.collection('properties').onSnapshot((snapshot) => {
+                console.log('ðŸ“¡ Real-time update received!');
+                console.log('Documents in snapshot:', snapshot.size);
+                
                 properties = [];
                 snapshot.forEach((doc) => {
+                    console.log('Received property:', doc.data().name);
                     properties.push({ id: doc.id, ...doc.data() });
                 });
+                
                 if (properties.length === 0) {
+                    console.log('No properties in Firestore, loading defaults...');
                     properties = defaultProperties;
                     if (isAdmin) {
+                        console.log('User is admin, saving default properties...');
                         saveToFirestore();
                     }
                 }
+                
+                console.log('Rendering', properties.length, 'properties');
                 render();
+            }, (error) => {
+                console.error('âŒ Real-time listener error:', error);
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
             });
         }
 
@@ -1293,18 +1317,30 @@
         }
 
         async function saveToFirestore() {
-            if (!db || !currentUser) return;
+            console.log('Attempting to save to Firestore...');
+            console.log('db:', db ? 'Connected' : 'Not connected');
+            console.log('currentUser:', currentUser ? currentUser.email : 'Not logged in');
+            
+            if (!db || !currentUser) {
+                console.error('Cannot save: db or currentUser is null');
+                return;
+            }
 
             try {
+                console.log('Creating batch with', properties.length, 'properties');
                 const batch = db.batch();
                 properties.forEach(prop => {
+                    console.log('Adding to batch:', prop.name);
                     const docRef = db.collection('properties').doc(String(prop.id));
                     batch.set(docRef, prop);
                 });
+                console.log('Committing batch...');
                 await batch.commit();
-                console.log('✅ Saved to Firestore');
+                console.log('âœ… Saved to Firestore successfully!');
             } catch (error) {
-                console.error('Error saving:', error);
+                console.error('âŒ Error saving to Firestore:', error);
+                console.error('Error code:', error.code);
+                console.error('Error message:', error.message);
             }
         }
 
@@ -1327,13 +1363,13 @@
                             <div class="property-name">${property.name}</div>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div class="issue-count">${totalIssues} issues</div>
-                                ${isAdmin ? `<button class="delete-btn" onclick="deleteProperty(${property.id})">✕ Delete</button>` : ''}
+                                ${isAdmin ? `<button class="delete-btn" onclick="deleteProperty(${property.id})">âœ• Delete</button>` : ''}
                             </div>
                         </div>
                         <div class="rooms-container">
                             <div class="stats">
-                                <div class="stat-badge">▪ ${property.rooms.length} rooms</div>
-                                ${highIssues > 0 ? `<div class="stat-badge" style="background: #fff5f5; color: #f56565;">⚠ ${highIssues} urgent</div>` : ''}
+                                <div class="stat-badge">â–ª ${property.rooms.length} rooms</div>
+                                ${highIssues > 0 ? `<div class="stat-badge" style="background: #fff5f5; color: #f56565;">âš  ${highIssues} urgent</div>` : ''}
                             </div>
                             ${property.rooms.map(room => `
                                 <div class="room-item">
@@ -1351,7 +1387,7 @@
                                                               onclick="toggleUrgency(${property.id}, ${room.id}, ${issue.id})">
                                                             ${issue.urgency}
                                                         </span>
-                                                        <button class="delete-btn" onclick="deleteIssue(${property.id}, ${room.id}, ${issue.id})" style="padding: 4px 8px; font-size: 11px;">✕</button>
+                                                        <button class="delete-btn" onclick="deleteIssue(${property.id}, ${room.id}, ${issue.id})" style="padding: 4px 8px; font-size: 11px;">âœ•</button>
                                                     </div>
                                                     <div class="issue-time">${new Date(issue.timestamp).toLocaleString()}</div>
                                                 </div>
