@@ -1035,8 +1035,13 @@
 
         // Auth State Listener
         function setupAuthListener() {
+            console.log('Setting up auth listener...');
             auth.onAuthStateChanged(async (user) => {
+                console.log('Auth state changed!');
+                console.log('User:', user ? user.email : 'null');
+                
                 if (user) {
+                    console.log('User is logged in, setting up dashboard...');
                     currentUser = user;
                     
                     // Track user login
@@ -1044,6 +1049,7 @@
                     
                     // Check admin status
                     isAdmin = await checkAdminStatus(user.email);
+                    console.log('Is admin:', isAdmin);
                     
                     document.getElementById('userEmail').textContent = user.email;
                     
@@ -1057,10 +1063,12 @@
                         document.getElementById('manageAdminsBtn').style.display = 'none';
                     }
                     
+                    console.log('Showing dashboard...');
                     showDashboard();
                     setupRealtimeListeners();
                     loadFromFirestore();
                 } else {
+                    console.log('No user, showing auth screen...');
                     currentUser = null;
                     isAdmin = false;
                     showAuth();
@@ -1711,8 +1719,10 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('Page loaded, initializing Firebase...');
             const connected = initFirebase();
             if (connected) {
+                console.log('Firebase connected, setting up auth listener...');
                 setupAuthListener();
             } else {
                 alert('Failed to connect to Firebase. Please check your internet connection.');
