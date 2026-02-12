@@ -1045,50 +1045,58 @@
         // Auth State Listener
         function setupAuthListener() {
             console.log('Setting up auth listener...');
-            auth.onAuthStateChanged((user) => {
+            auth.onAuthStateChanged(async (user) => {
                 console.log('Auth state changed!');
                 console.log('User:', user ? user.email : 'null');
                 
                 if (user) {
-                    console.log('User is logged in, showing dashboard immediately...');
+                    console.log('User is logged in, setting up dashboard...');
                     currentUser = user;
                     
-                    // Show dashboard first with loading state
+                    // Show dashboard immediately
                     document.getElementById('userEmail').textContent = user.email;
+                    console.log('Showing dashboard...');
                     showDashboard();
-                    console.log('Dashboard shown!');
                     
-                    // Then check admin status and update UI
-                    trackUser(user.email).then(() => {
-                        console.log('User tracked');
-                        return checkAdminStatus(user.email);
-                    }).then((adminStatus) => {
-                        console.log('Admin status checked:', adminStatus);
-                        isAdmin = adminStatus;
+                    try {
+                        // Track user
+                        await trackUser(user.email);
+                        console.log('âœ“ User tracked');
                         
-                        // Update admin UI based on actual status
+                        // Check admin status
+                        const adminStatus = await checkAdminStatus(user.email);
+                        isAdmin = adminStatus;
+                        console.log('âœ“ Admin status:', isAdmin);
+                        
+                        // Update UI based on admin status
                         if (isAdmin) {
+                            console.log('User IS admin - showing admin controls');
                             document.getElementById('adminBadge').style.display = 'block';
                             document.getElementById('addPropertyBtn').style.display = 'inline-block';
                             document.getElementById('manageAdminsBtn').style.display = 'inline-block';
                         } else {
+                            console.log('User is NOT admin - hiding admin controls');
                             document.getElementById('adminBadge').style.display = 'none';
                             document.getElementById('addPropertyBtn').style.display = 'none';
                             document.getElementById('manageAdminsBtn').style.display = 'none';
                         }
                         
+                        // Set up listeners and load data
                         setupRealtimeListeners();
-                        loadFromFirestore();
-                    }).catch((error) => {
-                        console.error('Error in async setup:', error);
-                        // If there's an error, treat as non-admin for safety
+                        await loadFromFirestore();
+                        
+                    } catch (error) {
+                        console.error('âŒ Error in auth setup:', error);
+                        // Default to non-admin on error
                         isAdmin = false;
                         document.getElementById('adminBadge').style.display = 'none';
                         document.getElementById('addPropertyBtn').style.display = 'none';
                         document.getElementById('manageAdminsBtn').style.display = 'none';
+                        
+                        // Still load data
                         setupRealtimeListeners();
-                        loadFromFirestore();
-                    });
+                        await loadFromFirestore();
+                    }
                 } else {
                     console.log('No user, showing auth screen...');
                     currentUser = null;
