@@ -936,14 +936,14 @@
     <script>
         // Firebase Configuration
         const firebaseConfig = {
-  apiKey: "AIzaSyDoWsfuDlGhkp9eKtSBZnvy2JCjhiPs56M",
-  authDomain: "maintenance-dashboard-87d8f.firebaseapp.com",
-  projectId: "maintenance-dashboard-87d8f",
-  storageBucket: "maintenance-dashboard-87d8f.firebasestorage.app",
-  messagingSenderId: "728275272402",
-  appId: "1:728275272402:web:9d9110ac1daee3f998e30b",
-  measurementId: "G-HB3L1Z2B8T"
-};
+            apiKey: "AIzaSyDoWsfuDlGhkp9eKtSBZnvy2JCjhiPs56M",
+            authDomain: "maintenance-dashboard-87d8f.firebaseapp.com",
+            projectId: "maintenance-dashboard-87d8f",
+            storageBucket: "maintenance-dashboard-87d8f.firebasestorage.app",
+            messagingSenderId: "728275272402",
+            appId: "1:728275272402:web:9d9110ac1daee3f998e30b",
+            measurementId: "G-HB3L1Z2B8T"
+        };
 
         // ADMIN EMAIL - First user becomes admin automatically
         // Additional admins can be added through the UI
@@ -1122,6 +1122,14 @@
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 hideError();
+                console.log('Login successful! Redirecting...');
+                // The auth state listener should handle the redirect, but let's give it a moment
+                setTimeout(() => {
+                    if (document.getElementById('authContainer').style.display !== 'none') {
+                        console.log('Manually triggering redirect...');
+                        window.location.reload();
+                    }
+                }, 500);
             } catch (error) {
                 console.error('Login error:', error);
                 if (error.code === 'auth/user-not-found') {
@@ -1171,6 +1179,14 @@
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
                 hideError();
+                console.log('Signup successful! Redirecting...');
+                // The auth state listener should handle the redirect, but let's give it a moment
+                setTimeout(() => {
+                    if (document.getElementById('authContainer').style.display !== 'none') {
+                        console.log('Manually triggering redirect...');
+                        window.location.reload();
+                    }
+                }, 500);
             } catch (error) {
                 console.error('Signup error:', error);
                 if (error.code === 'auth/email-already-in-use') {
