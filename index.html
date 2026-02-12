@@ -1053,29 +1053,38 @@
                     console.log('User is logged in, setting up dashboard...');
                     currentUser = user;
                     
-                    // Track user login
-                    await trackUser(user.email);
-                    
-                    // Check admin status
-                    isAdmin = await checkAdminStatus(user.email);
-                    console.log('Is admin:', isAdmin);
-                    
-                    document.getElementById('userEmail').textContent = user.email;
-                    
-                    if (isAdmin) {
-                        document.getElementById('adminBadge').style.display = 'block';
-                        document.getElementById('addPropertyBtn').style.display = 'inline-block';
-                        document.getElementById('manageAdminsBtn').style.display = 'inline-block';
-                    } else {
-                        document.getElementById('adminBadge').style.display = 'none';
-                        document.getElementById('addPropertyBtn').style.display = 'none';
-                        document.getElementById('manageAdminsBtn').style.display = 'none';
+                    try {
+                        // Track user login
+                        await trackUser(user.email);
+                        console.log('User tracked');
+                        
+                        // Check admin status
+                        isAdmin = await checkAdminStatus(user.email);
+                        console.log('Is admin:', isAdmin);
+                        
+                        document.getElementById('userEmail').textContent = user.email;
+                        
+                        if (isAdmin) {
+                            document.getElementById('adminBadge').style.display = 'block';
+                            document.getElementById('addPropertyBtn').style.display = 'inline-block';
+                            document.getElementById('manageAdminsBtn').style.display = 'inline-block';
+                        } else {
+                            document.getElementById('adminBadge').style.display = 'none';
+                            document.getElementById('addPropertyBtn').style.display = 'none';
+                            document.getElementById('manageAdminsBtn').style.display = 'none';
+                        }
+                        
+                        console.log('About to show dashboard...');
+                        showDashboard();
+                        console.log('Dashboard shown! Setting up listeners...');
+                        
+                        setupRealtimeListeners();
+                        loadFromFirestore();
+                    } catch (error) {
+                        console.error('Error in auth setup:', error);
+                        // Show dashboard anyway
+                        showDashboard();
                     }
-                    
-                    console.log('Showing dashboard...');
-                    showDashboard();
-                    setupRealtimeListeners();
-                    loadFromFirestore();
                 } else {
                     console.log('No user, showing auth screen...');
                     currentUser = null;
