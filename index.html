@@ -789,7 +789,7 @@
     <div class="auth-container" id="authContainer">
         <div class="auth-box">
             <div class="auth-header">
-                <h1>â€¢ Azzurro Hotels</h1>
+                <h1>Azzurro Hotels</h1>
                 <p>Maintenance Dashboard</p>
             </div>
 
@@ -819,7 +819,7 @@
             <!-- Signup Form -->
             <div class="auth-form" id="signupForm">
                 <div class="admin-note">
-                    <strong>Â» Note:</strong> First account created will be the Admin account with full property management access.
+                    <strong>> Note:</strong> First account created will be the Admin account with full property management access.
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email</label>
@@ -842,24 +842,24 @@
     <div class="container" id="mainContainer">
         <header>
             <div class="header-left">
-                <h1>â€¢ Azzurro Hotels - Maintenance Dashboard</h1>
+                <h1>Azzurro Hotels - Maintenance Dashboard</h1>
                 <p class="subtitle">Sydney Properties Management System</p>
             </div>
             <div class="header-right">
                 <div class="user-info">
                     <div class="user-email" id="userEmail"></div>
                     <div id="adminBadge" style="display: none;">
-                        <span class="admin-badge">* ADMIN</span>
+                        <span class="admin-badge">ADMIN</span>
                     </div>
                 </div>
-                <button class="btn-manage-admins" id="manageAdminsBtn" onclick="openAdminManagementModal()" style="display: none;">Â§ Manage Admins</button>
+                <button class="btn-manage-admins" id="manageAdminsBtn" onclick="openAdminManagementModal()" style="display: none;"># Manage Admins</button>
                 <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
         </header>
 
         <div class="controls">
             <button class="btn" id="addPropertyBtn" onclick="openPropertyModal()" style="display: none;">+ Add Property</button>
-            <button class="btn btn-secondary" onclick="exportData()">â†“ Export Report</button>
+            <button class="btn btn-secondary" onclick="exportData()">v Export Report</button>
         </div>
 
         <div class="properties-grid" id="propertiesGrid"></div>
@@ -920,7 +920,7 @@
     <!-- Admin Management Modal -->
     <div class="modal" id="adminManagementModal">
         <div class="modal-content">
-            <div class="modal-header">Â§ Manage Admin Users</div>
+            <div class="modal-header"># Manage Admin Users</div>
             <div class="admin-note">
                 <strong>Note:</strong> Admins can add/delete properties. Regular users can manage rooms and issues.
             </div>
@@ -1371,12 +1371,12 @@
                             <div class="property-name">${property.name}</div>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div class="issue-count">${totalIssues} issues</div>
-                                ${isAdmin ? `<button class="delete-btn" onclick="deleteProperty(${property.id})">Ã— Delete</button>` : ''}
+                                ${isAdmin ? `<button class="delete-btn" onclick="deleteProperty(${property.id})">x Delete</button>` : ''}
                             </div>
                         </div>
                         <div class="rooms-container">
                             <div class="stats">
-                                <div class="stat-badge">â€¢ ${property.rooms.length} rooms</div>
+                                <div class="stat-badge">- ${property.rooms.length} rooms</div>
                                 ${highIssues > 0 ? `<div class="stat-badge" style="background: #fff5f5; color: #f56565;">! ${highIssues} urgent</div>` : ''}
                             </div>
                             ${property.rooms.map(room => `
@@ -1395,7 +1395,7 @@
                                                               onclick="toggleUrgency(${property.id}, ${room.id}, ${issue.id})">
                                                             ${issue.urgency}
                                                         </span>
-                                                        <button class="delete-btn" onclick="deleteIssue(${property.id}, ${room.id}, ${issue.id})" style="padding: 4px 8px; font-size: 11px;">Ã—</button>
+                                                        <button class="delete-btn" onclick="deleteIssue(${property.id}, ${room.id}, ${issue.id})" style="padding: 4px 8px; font-size: 11px;">x</button>
                                                     </div>
                                                     <div class="issue-time">${new Date(issue.timestamp).toLocaleString()}</div>
                                                 </div>
