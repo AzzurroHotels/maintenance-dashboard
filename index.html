@@ -971,7 +971,16 @@
                 firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 auth = firebase.auth();
-                console.log('âœ… Firebase initialized!');
+                
+                // Set persistence to LOCAL (stays logged in across sessions)
+                auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                    .then(() => {
+                        console.log('âœ… Firebase initialized with LOCAL persistence!');
+                    })
+                    .catch((error) => {
+                        console.error('Persistence error:', error);
+                    });
+                
                 return true;
             } catch (error) {
                 console.error('âŒ Firebase error:', error);
@@ -1128,16 +1137,10 @@
 
             isLoggingIn = true;
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                console.log('âœ… Login successful!', userCredential.user.email);
                 hideError();
-                console.log('Login successful! Redirecting...');
-                // The auth state listener should handle the redirect, but let's give it a moment
-                setTimeout(() => {
-                    if (document.getElementById('authContainer').style.display !== 'none') {
-                        console.log('Manually triggering redirect...');
-                        window.location.reload();
-                    }
-                }, 500);
+                // Auth state listener will handle showing the dashboard
             } catch (error) {
                 console.error('Login error:', error);
                 if (error.code === 'auth/user-not-found') {
@@ -1152,7 +1155,7 @@
                     showError('Login failed: ' + error.message);
                 }
             } finally {
-                isLoggingIn = false;
+                setTimeout(() => { isLoggingIn = false; }, 1000);
             }
         }
 
