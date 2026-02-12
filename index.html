@@ -794,7 +794,7 @@
             </div>
 
             <div class="auth-tabs">
-                <button class="btn" style="width: 100%;" type="button" onclick="handleLogin()">Sign In</button>
+                <button class="auth-tab active" onclick="showAuthTab('login')">Sign In</button>
                 <button class="auth-tab" onclick="showAuthTab('signup')">Create Account</button>
             </div>
 
@@ -810,7 +810,7 @@
                     <label class="form-label">Password</label>
                     <input type="password" class="form-input" id="loginPassword" placeholder="Enter your password">
                 </div>
-                <button class="btn" style="width: 100%;" onclick="handleLogin()">Sign In</button>
+                <button class="btn" style="width: 100%;" type="button" onclick="handleLogin(); return false;">Sign In</button>
                 <div class="auth-link">
                     <a href="#" onclick="showForgotPassword()">Forgot password?</a>
                 </div>
@@ -833,7 +833,7 @@
                     <label class="form-label">Confirm Password</label>
                     <input type="password" class="form-input" id="signupConfirmPassword" placeholder="Confirm your password">
                 </div>
-                <button class="btn" style="width: 100%;" onclick="handleSignup()">Create Account</button>
+                <button class="btn" style="width: 100%;" type="button" onclick="handleSignup(); return false;">Create Account</button>
             </div>
         </div>
     </div>
@@ -1102,7 +1102,14 @@
             document.getElementById('authError').classList.remove('show');
         }
 
+        let isLoggingIn = false;
+
         async function handleLogin() {
+            if (isLoggingIn) {
+                console.log('Login already in progress...');
+                return;
+            }
+
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
 
@@ -1111,6 +1118,7 @@
                 return;
             }
 
+            isLoggingIn = true;
             try {
                 await auth.signInWithEmailAndPassword(email, password);
                 hideError();
@@ -1122,13 +1130,24 @@
                     showError('Incorrect password');
                 } else if (error.code === 'auth/invalid-email') {
                     showError('Invalid email address');
+                } else if (error.code === 'auth/quota-exceeded') {
+                    showError('Too many attempts. Please wait 1 hour and try again.');
                 } else {
                     showError('Login failed: ' + error.message);
                 }
+            } finally {
+                isLoggingIn = false;
             }
         }
 
+        let isSigningUp = false;
+
         async function handleSignup() {
+            if (isSigningUp) {
+                console.log('Signup already in progress...');
+                return;
+            }
+
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
             const confirmPassword = document.getElementById('signupConfirmPassword').value;
@@ -1148,6 +1167,7 @@
                 return;
             }
 
+            isSigningUp = true;
             try {
                 await auth.createUserWithEmailAndPassword(email, password);
                 hideError();
@@ -1159,9 +1179,13 @@
                     showError('Invalid email address');
                 } else if (error.code === 'auth/weak-password') {
                     showError('Password is too weak');
+                } else if (error.code === 'auth/quota-exceeded') {
+                    showError('Too many attempts. Please wait 1 hour and try again.');
                 } else {
                     showError('Signup failed: ' + error.message);
                 }
+            } finally {
+                isSigningUp = false;
             }
         }
 
