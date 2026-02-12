@@ -819,7 +819,7 @@
             <!-- Signup Form -->
             <div class="auth-form" id="signupForm">
                 <div class="admin-note">
-                    <strong>> Note:</strong> First account created will be the Admin account with full property management access.
+                    <strong>> Note:</strong> All users have full access to all features.
                 </div>
                 <div class="form-group">
                     <label class="form-label">Email</label>
@@ -848,17 +848,13 @@
             <div class="header-right">
                 <div class="user-info">
                     <div class="user-email" id="userEmail"></div>
-                    <div id="adminBadge" style="display: none;">
-                        <span class="admin-badge">ADMIN</span>
-                    </div>
                 </div>
-                <button class="btn-manage-admins" id="manageAdminsBtn" onclick="openAdminManagementModal()" style="display: none;"># Manage Admins</button>
                 <button class="btn-logout" onclick="handleLogout()">Sign Out</button>
             </div>
         </header>
 
         <div class="controls">
-            <button class="btn" id="addPropertyBtn" onclick="openPropertyModal()" style="display: none;">+ Add Property</button>
+            <button class="btn" id="addPropertyBtn" onclick="openPropertyModal()">+ Add Property</button>
             <button class="btn btn-secondary" onclick="exportData()">v Export Report</button>
         </div>
 
@@ -1058,28 +1054,16 @@
                     console.log('Showing dashboard...');
                     showDashboard();
                     
+                    // Everyone has full access - no admin check needed
+                    console.log('All features enabled for all users');
+                    
+                    // Show all buttons for everyone
+                    document.getElementById('addPropertyBtn').style.display = 'inline-block';
+                    
                     try {
                         // Track user
                         await trackUser(user.email);
                         console.log('âœ“ User tracked');
-                        
-                        // Check admin status
-                        const adminStatus = await checkAdminStatus(user.email);
-                        isAdmin = adminStatus;
-                        console.log('âœ“ Admin status:', isAdmin);
-                        
-                        // Update UI based on admin status
-                        if (isAdmin) {
-                            console.log('User IS admin - showing admin controls');
-                            document.getElementById('adminBadge').style.display = 'block';
-                            document.getElementById('addPropertyBtn').style.display = 'inline-block';
-                            document.getElementById('manageAdminsBtn').style.display = 'inline-block';
-                        } else {
-                            console.log('User is NOT admin - hiding admin controls');
-                            document.getElementById('adminBadge').style.display = 'none';
-                            document.getElementById('addPropertyBtn').style.display = 'none';
-                            document.getElementById('manageAdminsBtn').style.display = 'none';
-                        }
                         
                         // Set up listeners and load data
                         setupRealtimeListeners();
@@ -1087,12 +1071,6 @@
                         
                     } catch (error) {
                         console.error('âŒ Error in auth setup:', error);
-                        // Default to non-admin on error
-                        isAdmin = false;
-                        document.getElementById('adminBadge').style.display = 'none';
-                        document.getElementById('addPropertyBtn').style.display = 'none';
-                        document.getElementById('manageAdminsBtn').style.display = 'none';
-                        
                         // Still load data
                         setupRealtimeListeners();
                         await loadFromFirestore();
@@ -1100,7 +1078,6 @@
                 } else {
                     console.log('No user, showing auth screen...');
                     currentUser = null;
-                    isAdmin = false;
                     showAuth();
                 }
             });
@@ -1281,10 +1258,8 @@
                 if (properties.length === 0) {
                     console.log('No properties in Firestore, loading defaults...');
                     properties = defaultProperties;
-                    if (isAdmin) {
-                        console.log('User is admin, saving default properties...');
-                        saveToFirestore();
-                    }
+                    console.log('Saving default properties...');
+                    saveToFirestore();
                 }
                 
                 console.log('Rendering', properties.length, 'properties');
@@ -1312,9 +1287,7 @@
                 
                 if (properties.length === 0) {
                     properties = defaultProperties;
-                    if (isAdmin) {
-                        await saveToFirestore();
-                    }
+                    await saveToFirestore();
                 }
                 render();
             } catch (error) {
@@ -1371,7 +1344,7 @@
                             <div class="property-name">${property.name}</div>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <div class="issue-count">${totalIssues} issues</div>
-                                ${isAdmin ? `<button class="delete-btn" onclick="deleteProperty(${property.id})">x Delete</button>` : ''}
+                                <button class="delete-btn" onclick="deleteProperty(${property.id})">x Delete</button>
                             </div>
                         </div>
                         <div class="rooms-container">
@@ -1412,10 +1385,6 @@
         }
 
         function openPropertyModal() {
-            if (!isAdmin) {
-                alert('Only admin can add properties');
-                return;
-            }
             document.getElementById('propertyModal').classList.add('active');
             document.getElementById('propertyNameInput').value = '';
         }
@@ -1425,11 +1394,6 @@
         }
 
         function addProperty() {
-            if (!isAdmin) {
-                alert('Only admin can add properties');
-                return;
-            }
-
             const name = document.getElementById('propertyNameInput').value.trim();
             if (!name) {
                 alert('Please enter a property name');
@@ -1448,11 +1412,6 @@
         }
 
         function deleteProperty(propertyId) {
-            if (!isAdmin) {
-                alert('Only admin can delete properties');
-                return;
-            }
-
             const property = properties.find(p => p.id === propertyId);
             if (!property) return;
 
@@ -1580,7 +1539,6 @@
             report += '='.repeat(50) + '\n';
             report += `Generated: ${new Date().toLocaleString()}\n`;
             report += `Generated by: ${currentUser.email}\n`;
-            if (isAdmin) report += `Role: Admin\n`;
             report += '\n';
 
             properties.forEach(property => {
