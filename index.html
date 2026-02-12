@@ -1045,46 +1045,43 @@
         // Auth State Listener
         function setupAuthListener() {
             console.log('Setting up auth listener...');
-            auth.onAuthStateChanged(async (user) => {
+            auth.onAuthStateChanged((user) => {
                 console.log('Auth state changed!');
                 console.log('User:', user ? user.email : 'null');
                 
                 if (user) {
-                    console.log('User is logged in, setting up dashboard...');
+                    console.log('User is logged in, showing dashboard immediately...');
                     currentUser = user;
+                    isAdmin = true; // Assume admin for now
                     
-                    try {
-                        // Track user login
-                        await trackUser(user.email);
+                    document.getElementById('userEmail').textContent = user.email;
+                    document.getElementById('adminBadge').style.display = 'block';
+                    document.getElementById('addPropertyBtn').style.display = 'inline-block';
+                    document.getElementById('manageAdminsBtn').style.display = 'inline-block';
+                    
+                    console.log('Calling showDashboard()...');
+                    showDashboard();
+                    console.log('showDashboard() called!');
+                    
+                    // Do async stuff after dashboard is shown
+                    trackUser(user.email).then(() => {
                         console.log('User tracked');
-                        
-                        // Check admin status
-                        isAdmin = await checkAdminStatus(user.email);
-                        console.log('Is admin:', isAdmin);
-                        
-                        document.getElementById('userEmail').textContent = user.email;
-                        
-                        if (isAdmin) {
-                            document.getElementById('adminBadge').style.display = 'block';
-                            document.getElementById('addPropertyBtn').style.display = 'inline-block';
-                            document.getElementById('manageAdminsBtn').style.display = 'inline-block';
-                        } else {
+                        return checkAdminStatus(user.email);
+                    }).then((adminStatus) => {
+                        console.log('Admin status checked:', adminStatus);
+                        isAdmin = adminStatus;
+                        if (!isAdmin) {
                             document.getElementById('adminBadge').style.display = 'none';
                             document.getElementById('addPropertyBtn').style.display = 'none';
                             document.getElementById('manageAdminsBtn').style.display = 'none';
                         }
-                        
-                        console.log('About to show dashboard...');
-                        showDashboard();
-                        console.log('Dashboard shown! Setting up listeners...');
-                        
                         setupRealtimeListeners();
                         loadFromFirestore();
-                    } catch (error) {
-                        console.error('Error in auth setup:', error);
-                        // Show dashboard anyway
-                        showDashboard();
-                    }
+                    }).catch((error) => {
+                        console.error('Error in async setup:', error);
+                        setupRealtimeListeners();
+                        loadFromFirestore();
+                    });
                 } else {
                     console.log('No user, showing auth screen...');
                     currentUser = null;
